@@ -14,7 +14,7 @@ class WordleClient(discord.Client):
     async def on_message(self, message):
         if self.is_valid_wordle(message):
             content = message.content.split("\n")
-            wr = WordleResult(message.author, content[0])
+            wr = WordleResult(message, content[0])
             print(wr)
         else:
             print("\tNot valid Wordle Result!")
