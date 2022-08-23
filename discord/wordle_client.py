@@ -1,10 +1,7 @@
-
-import discord
-import json
 import re
+import discord
 
 from wordle_result import WordleResult
-
 
 # class describing the bot client
 class WordleClient(discord.Client):
@@ -15,9 +12,10 @@ class WordleClient(discord.Client):
     # for now, simply print discord message to console
     # later will need to add code that parses wordle messages and does something interesting with them
     async def on_message(self, message):
-        print(f"Message from {message.author} - {message.content}")
         if self.is_valid_wordle(message):
-            print("\tValid Wordle Result!")
+            content = message.content.split("\n")
+            wr = WordleResult(message.author, content[0])
+            print(wr)
         else:
             print("\tNot valid Wordle Result!")
 
@@ -29,20 +27,6 @@ class WordleClient(discord.Client):
                             content[0])
         
         if isWordle:
-            wr = WordleResult(message.author, content[0])
-            print(wr)
             return True
         else:
             return False
-
-
-# main part of code that runs when script is called
-if __name__ == '__main__':
-    intents = discord.Intents.default()
-    intents.message_content = True
-
-    with open('config.json') as cfg:
-        config = json.load(cfg)
-
-    client = WordleClient(intents=intents)
-    client.run(config["token"])
