@@ -9,8 +9,8 @@ class WordleClient(discord.Client):
     async def on_ready(self):
         print(f"Logged on as {self.user}")
 
-    # for now, simply print discord message to console
-    # later will need to add code that parses wordle messages and does something interesting with them
+    # if valid wordle message, parse and have the bot send a message back
+    # otherwise just print the invalid message to console (this behavior can probably be removed eventually)
     async def on_message(self, message):
         # ignore messages from this bot
         if message.author == self.user:
