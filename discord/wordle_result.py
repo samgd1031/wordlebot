@@ -11,4 +11,4 @@ class WordleResult():
         self.num_guesses = -1 if hdr[2][0] == 'X' else int(hdr[2][0])
     
     def __repr__(self) -> str:
-        return f"Puzzle {self.puzzle_number} by {self.player} ({self.dt}) - guesses: {self.num_guesses} - hard mode: {self.hard_mode}"
+        return f"Puzzle {self.puzzle_number} by {self.player} ({self.dt.strftime('%Y/%m/%d %H:%M:%S %Z')}) - guesses: {self.num_guesses} - hard mode: {self.hard_mode}"
