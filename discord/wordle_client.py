@@ -29,7 +29,7 @@ class WordleClient(discord.Client):
     def is_valid_wordle(self, message) -> bool:
         content = message.content.split("\n")
 
-        isWordle = re.match(r"Wordle \d* [0-6X]/6\*?",
+        isWordle = re.match(r"Wordle \d* [1-6X]/6\*?",
                             content[0])
         
         if isWordle:
