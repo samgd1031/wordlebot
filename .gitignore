@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # discord bot config with private token
-discord/config.json
+config.json
 
 # visual studio code
 .vscode
