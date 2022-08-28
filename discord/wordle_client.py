@@ -11,8 +11,9 @@ class WordleClient(discord.Client):
 
     # if valid wordle message, parse and have the bot send a message back
     # otherwise just print the invalid message to console (this behavior can probably be removed eventually)
+    # instead of printing to console this should also be logged
     async def on_message(self, message):
-        # ignore messages from this bot
+        # ignore messages from this bot (it should never send a wordle message but just in case)
         if message.author == self.user:
             return
 

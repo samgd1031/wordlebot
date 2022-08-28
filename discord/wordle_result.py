@@ -9,6 +9,10 @@ class WordleResult():
         self.puzzle_number = hdr[1]
         self.hard_mode = True if hdr[2][-1] == '*' else False
         self.num_guesses = -1 if hdr[2][0] == 'X' else int(hdr[2][0])
+        self.solved = False if self.num_guesses == -1 else True
     
     def __repr__(self) -> str:
-        return f"Puzzle {self.puzzle_number} by {self.player} ({self.dt.strftime('%Y/%m/%d %H:%M:%S %Z')}) - guesses: {self.num_guesses} - hard mode: {self.hard_mode}"
+        if self.solved:
+            return f"Puzzle {self.puzzle_number} solved by {self.player} | guesses: {self.num_guesses} | hard mode: {self.hard_mode}"
+        else:
+            return f"Puzzle {self.puzzle_number} failed by {self.player} | hard mode: {self.hard_mode}"
