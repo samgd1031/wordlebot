@@ -130,3 +130,6 @@ dmypy.json
 
 # discord bot config with private token
 discord/config.json
+
+# visual studio code
+.vscode

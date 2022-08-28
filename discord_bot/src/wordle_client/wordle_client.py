@@ -1,7 +1,7 @@
 import re
 import discord
 
-from wordle_result import WordleResult
+from ..wordle_result.wordle_result import WordleResult
 
 # class describing the bot client
 class WordleClient(discord.Client):
