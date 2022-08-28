@@ -17,7 +17,7 @@ class WordleClient(discord.Client):
         if message.author == self.user:
             return
 
-        if self.is_valid_wordle(message):
+        if self.is_valid_wordle(message.content):
             content = message.content.split("\n")
             wr = WordleResult(message, content[0])
             response = wr.__repr__()
@@ -27,8 +27,8 @@ class WordleClient(discord.Client):
             print("\tNot valid Wordle Result!")
 
     # check if a message string is a valid wordle result
-    def is_valid_wordle(self, message) -> bool:
-        content = message.content.split("\n")
+    def is_valid_wordle(self, msg: str) -> bool:
+        content = msg.split("\n")
 
         isWordle = re.match(r"Wordle \d* [1-6X]/6\*?",
                             content[0])
