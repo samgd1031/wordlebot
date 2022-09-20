@@ -6,7 +6,7 @@ class WordleResult():
         self.player = message.author
         self.dt = message.created_at
         hdr = header.split()
-        self.puzzle_number = hdr[1]
+        self.puzzle_number = "wordle_" + hdr[1]
         self.hard_mode = True if hdr[2][-1] == '*' else False
         self.num_guesses = -1 if hdr[2][0] == 'X' else int(hdr[2][0])
         self.solved = False if self.num_guesses == -1 else True

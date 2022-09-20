@@ -1,7 +1,7 @@
 import discord
 import json
 
-from src.wordle_client.wordle_client import WordleClient
+from wordle_client.wordle_client import WordleClient
 
 
 # main part of code that runs when script is called
