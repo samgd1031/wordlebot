@@ -1,3 +1,6 @@
 {
-    "token":"Your Private Discord Token Here"
+    "DISCORD_TOKEN":"private_discord_token here",
+    "MONGO_URI": "URI for mongo database",
+    "MONGO_COLLECTION":"collection name",
+    "MONGO_DOCUMENT":"document name"
 }

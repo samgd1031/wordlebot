@@ -13,8 +13,15 @@ class WordleResult():
         self.num_guesses = -1 if hdr[2][0] == 'X' else int(hdr[2][0])
         self.solved = False if self.num_guesses == -1 else True
     
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
+    def to_dict(self):
+        dc = {"_id":f"{self.player.name}_{self.player.discriminator}_{self.puzzle_number}",
+                "player":f"{self.player.name}_{self.player.discriminator}",
+                "time":self.dt,
+                "puzzle":self.puzzle_number,
+                "hard_mode":self.hard_mode,
+                "num_guesses":self.num_guesses,
+                "solved":self.solved}
+        return dc
 
     def __repr__(self) -> str:
         if self.solved:

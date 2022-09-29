@@ -1,10 +1,22 @@
 import discord
-
+from pymongo import MongoClient
+import pymongo
+import pymongo.errors
 from wordle_result.wordle_result import WordleResult
 from util.util import *
+import os
 
 # class describing the bot client
 class WordleClient(discord.Client):
+
+    # set up client with connection to mongoDB
+    def __init__(self, *, intents: discord.Intents, mongo_uri, mongo_db, mongo_col, **options) -> None:
+        self.mongo_client = MongoClient(mongo_uri)
+        self.mongo_db = self.mongo_client[mongo_db]
+        self.mongo_collection = self.mongo_db[mongo_col]
+        print(f'Connected to MongoDB. Collection: {mongo_col} in Database: {mongo_db}')
+        super().__init__(intents=intents, **options)
+
     # notify bot owner that login is successful
     async def on_ready(self):
         print(f"Logged on as {self.user}")
@@ -20,7 +32,14 @@ class WordleClient(discord.Client):
         content = message.content.split("\n")
         if is_valid_wordle(content[0]):
             wr = WordleResult(message, content[0])
-            response = wr.__repr__()
+
+            # send to database
+            try:
+                self.mongo_collection.insert_one(wr.to_dict())
+                response = wr.__repr__()
+            except pymongo.errors.DuplicateKeyError:
+                response = f"Duplicate entry not added to database (id: {wr.to_dict()['_id']})"
+
             await message.channel.send(response)
         else:
             print(f"{message.created_at}: {message.author} - \"{message.content}\"")
