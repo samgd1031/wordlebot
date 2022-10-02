@@ -2,8 +2,8 @@ import discord
 from pymongo import MongoClient
 import pymongo
 import pymongo.errors
-from wordle_result.wordle_result import WordleResult
-from util.util import *
+from src.wordle_result.wordle_result import WordleResult
+from src.util.util import *
 import logging
 
 
@@ -41,13 +41,13 @@ class WordleClient(discord.Client):
             # checks if valid wordle
             content = message.content.split("\n")
             if is_valid_wordle(content[0]):
-                wr = WordleResult(message, content[0])
+                wr = WordleResult(wordle_message_to_dict(message))
                 # send to database
                 try:
                     self.mongo_collection.insert_one(wr.to_dict())
                     response = wr.__repr__()
                 except pymongo.errors.DuplicateKeyError:
-                    response = f"Duplicate entry for {wr.puzzle_number} added to database.)"
+                    response = f"Duplicate entry for {wr.puzzle_number}, not added to database."
 
                 await message.channel.send(response)
             else:
