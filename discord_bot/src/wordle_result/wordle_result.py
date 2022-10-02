@@ -1,32 +1,24 @@
-import datetime as dt
-from datetime import date
+from datetime import timezone
 
 
 # class describing a single wordle result
 class WordleResult():
-    
-    def __init__(self, message, header):
-        self.player = message.author
-        self.dt = message.created_at.isoformat()
-        hdr = header.split()
-        self.puzzle_number = "wordle_" + hdr[1]
-        self.hard_mode = True if hdr[2][-1] == '*' else False
-        self.num_guesses = -1 if hdr[2][0] == 'X' else int(hdr[2][0])
-        self.solved = False if self.num_guesses == -1 else True
-
-    # initiaize from a dict (from a mongodDB request)
+    # initiaize from a dict (from a mongodDB request, discord messages must be converted)
     def __init__(self, d: dict):
+        self.id = d["_id"]
         self.player = d['player']
-        self.dt = dt.datetime.fromisoformat(d['time'])
+        self.dt = d['time']
+        if self.dt.tzinfo is None:
+            self.dt = self.dt.replace(tzinfo=timezone.utc)
         self.puzzle_number = d['puzzle']
         self.hard_mode = d['hard_mode']
         self.num_guesses = d['num_guesses']
         self.solved = d['solved']
 
-    
+    # output as dict for insertion to mongoDB
     def to_dict(self):
-        dc = {"_id":f"{self.player.name}_{self.player.discriminator}_{self.puzzle_number}",
-                "player":f"{self.player.name}_{self.player.discriminator}",
+        dc = {"_id":f"{self.player}_{self.puzzle_number}",
+                "player":self.player,
                 "time":self.dt,
                 "puzzle":self.puzzle_number,
                 "hard_mode":self.hard_mode,
@@ -36,6 +28,6 @@ class WordleResult():
 
     def __repr__(self) -> str:
         if self.solved:
-            return f"Puzzle {self.puzzle_number} solved by {self.player} | guesses: {self.num_guesses} | hard mode: {self.hard_mode}"
+            return f"Puzzle {self.puzzle_number} solved by {self.player.replace('_','#')} on {self.dt.strftime('%m/%d/%Y %Z')} | guesses: {self.num_guesses} | hard mode: {self.hard_mode}"
         else:
-            return f"Puzzle {self.puzzle_number} failed by {self.player} | hard mode: {self.hard_mode}"
+            return f"Puzzle {self.puzzle_number} failed by {self.player.replace('_','#')} on {self.dt.strftime('%m/%d/%Y %Z')} | hard mode: {self.hard_mode}"
