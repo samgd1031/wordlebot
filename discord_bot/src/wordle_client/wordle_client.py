@@ -4,7 +4,10 @@ import pymongo
 import pymongo.errors
 from wordle_result.wordle_result import WordleResult
 from util.util import *
-import os
+import logging
+
+
+
 
 # class describing the bot client
 class WordleClient(discord.Client):
@@ -14,12 +17,13 @@ class WordleClient(discord.Client):
         self.mongo_client = MongoClient(mongo_uri)
         self.mongo_db = self.mongo_client[mongo_db]
         self.mongo_collection = self.mongo_db[mongo_col]
-        print(f'Connected to MongoDB. Collection: {mongo_col} in Database: {mongo_db}')
+        self.logger = logging.getLogger(__name__)
+        self.logger.info(f'Connected to MongoDB. Collection: {mongo_col} in Database: {mongo_db}')
         super().__init__(intents=intents, **options)
 
     # notify bot owner that login is successful
     async def on_ready(self):
-        print(f"Logged on as {self.user}")
+        self.logger.info(f"Logged on to Discord as {self.user}")
 
     # if valid wordle message, parse and have the bot send a message back
     # otherwise just print the invalid message to console (this behavior can probably be removed eventually)
@@ -33,12 +37,11 @@ class WordleClient(discord.Client):
         if message.content[0] == '!':
             await self._handle_commands(message)
 
-        else:
+        else: # non command message
             # checks if valid wordle
             content = message.content.split("\n")
             if is_valid_wordle(content[0]):
                 wr = WordleResult(message, content[0])
-
                 # send to database
                 try:
                     self.mongo_collection.insert_one(wr.to_dict())
@@ -48,10 +51,8 @@ class WordleClient(discord.Client):
 
                 await message.channel.send(response)
             else:
-                print(f"{message.created_at}: {message.author} - \"{message.content}\"")
-                print("\tNot valid Wordle Result!")
+                self.logger.debug(f"{message.author} - \"{message.content}\" - Not a Wordle!")
 
-    
     async def _handle_commands(self, message: discord.Message):
         content = message.content.split(" ")
 
@@ -68,6 +69,7 @@ class WordleClient(discord.Client):
                     result = WordleResult(result)
                     await message.channel.send(result)
                 else:
+                    self.logger.debug(f'{content[1]} not found!')
                     await message.channel.send(f'{content[1]} not found!')
 
             case "!help":
