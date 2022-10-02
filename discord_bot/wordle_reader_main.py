@@ -3,7 +3,7 @@ import json
 import logging
 import datetime as dt
 
-from wordle_client.wordle_client import WordleClient
+from src.wordle_client.wordle_client import WordleClient
 
 # main part of code that runs when script is called
 if __name__ == '__main__':

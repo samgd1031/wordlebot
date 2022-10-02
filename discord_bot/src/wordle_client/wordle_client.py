@@ -2,8 +2,8 @@ import discord
 from pymongo import MongoClient
 import pymongo
 import pymongo.errors
-from wordle_result.wordle_result import WordleResult
-from util.util import *
+from src.wordle_result.wordle_result import WordleResult
+from src.util.util import *
 import logging
 
 
