@@ -64,8 +64,11 @@ class WordleClient(discord.Client):
                 # try to find this puzzle with this user in mongoDB
                 id = f"{message.author.name}_{message.author.discriminator}_{content[1]}"
                 result = self.mongo_collection.find_one({"_id":id})
-                result = WordleResult(result)
-                await message.channel.send(result)
+                if result:
+                    result = WordleResult(result)
+                    await message.channel.send(result)
+                else:
+                    await message.channel.send(f'{content[1]} not found!')
 
             case other:
                 message.channel.send(f'Command "{content[0]}" not recognized.')
