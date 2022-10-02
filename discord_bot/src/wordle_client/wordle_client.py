@@ -28,19 +28,44 @@ class WordleClient(discord.Client):
         # ignore messages from this bot (it should never send a wordle message but just in case)
         if message.author == self.user:
             return
-            
-        content = message.content.split("\n")
-        if is_valid_wordle(content[0]):
-            wr = WordleResult(message, content[0])
+        
+        # check if command (starts with '!')
+        if message.content[0] == '!':
+            await self._handle_commands(message)
 
-            # send to database
-            try:
-                self.mongo_collection.insert_one(wr.to_dict())
-                response = wr.__repr__()
-            except pymongo.errors.DuplicateKeyError:
-                response = f"Duplicate entry for {wr.puzzle_number} added to database.)"
-
-            await message.channel.send(response)
         else:
-            print(f"{message.created_at}: {message.author} - \"{message.content}\"")
-            print("\tNot valid Wordle Result!")
+            # checks if valid wordle
+            content = message.content.split("\n")
+            if is_valid_wordle(content[0]):
+                wr = WordleResult(message, content[0])
+
+                # send to database
+                try:
+                    self.mongo_collection.insert_one(wr.to_dict())
+                    response = wr.__repr__()
+                except pymongo.errors.DuplicateKeyError:
+                    response = f"Duplicate entry for {wr.puzzle_number} added to database.)"
+
+                await message.channel.send(response)
+            else:
+                print(f"{message.created_at}: {message.author} - \"{message.content}\"")
+                print("\tNot valid Wordle Result!")
+
+    
+    async def _handle_commands(self, message: discord.Message):
+        content = message.content.split(" ")
+
+        match content[0]:
+            case "!getpuzzle":
+                if len(content) != 2:
+                    await message.channel.send("Usage: !getpuzzle wordle_###")
+                    return
+                
+                # try to find this puzzle with this user in mongoDB
+                id = f"{message.author.name}_{message.author.discriminator}_{content[1]}"
+                result = self.mongo_collection.find_one({"_id":id})
+                result = WordleResult(result)
+                await message.channel.send(result)
+
+            case other:
+                message.channel.send(f'Command "{content[0]}" not recognized.')
