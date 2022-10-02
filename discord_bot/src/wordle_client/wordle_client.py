@@ -56,7 +56,7 @@ class WordleClient(discord.Client):
         content = message.content.split(" ")
 
         match content[0]:
-            case "!getpuzzle":
+            case "!getpuzzle":  # get results for a single puzzle belonging to the user
                 if len(content) != 2:
                     await message.channel.send("Usage: !getpuzzle wordle_###")
                     return
@@ -69,6 +69,12 @@ class WordleClient(discord.Client):
                     await message.channel.send(result)
                 else:
                     await message.channel.send(f'{content[1]} not found!')
+
+            case "!help":
+                resp =  "~WordleBot Commands~\n" + \
+                        "!help -   Show help\n" + \
+                        "!getpuzzle wordle_###   -   Get your result for puzzle ###"
+                await message.channel.send(resp)
 
             case other:
                 message.channel.send(f'Command "{content[0]}" not recognized.')
