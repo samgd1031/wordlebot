@@ -27,7 +27,7 @@ jobs:
       - name: build and push docker image
         uses: docker/build-push-action@v3.1.1
         with:
-          context: .
+          context: ./discord_bot/
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
