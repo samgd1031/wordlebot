@@ -7,23 +7,24 @@ from src.util.util import *
 import logging
 
 
+logger = logging.getLogger(__name__)
 
 
 # class describing the bot client
 class WordleClient(discord.Client):
 
     # set up client with connection to mongoDB
-    def __init__(self, *, intents: discord.Intents, mongo_uri, mongo_db, mongo_col, **options) -> None:
+    def __init__(self, *, intents: discord.Intents, mongo_uri, mongo_db, **options) -> None:
         self.mongo_client = MongoClient(mongo_uri)
         self.mongo_db = self.mongo_client[mongo_db]
-        self.mongo_collection = self.mongo_db[mongo_col]
-        self.logger = logging.getLogger(__name__)
-        self.logger.info(f'Connected to MongoDB. Collection: {mongo_col} in Database: {mongo_db}')
+        self.result_collection = self.mongo_db["wordle"]
+        self.player_collection = self.mongo_db["wordle_players"]
+        logger.info(f'Connected to MongoDB. Using database: {mongo_db}')
         super().__init__(intents=intents, **options)
 
     # notify bot owner that login is successful
     async def on_ready(self):
-        self.logger.info(f"Logged on to Discord as {self.user}")
+        logger.info(f"Logged on to Discord as {self.user}")
 
     # if valid wordle message, parse and have the bot send a message back
     # otherwise just print the invalid message to console (this behavior can probably be removed eventually)
@@ -44,14 +45,14 @@ class WordleClient(discord.Client):
                 wr = WordleResult(wordle_message_to_dict(message))
                 # send to database
                 try:
-                    self.mongo_collection.insert_one(wr.to_dict())
+                    self.result_collection.insert_one(wr.to_dict())
                     response = wr.__repr__()
                 except pymongo.errors.DuplicateKeyError:
                     response = f"Duplicate entry for {wr.puzzle_number}, not added to database."
 
                 await message.channel.send(response)
             else:
-                self.logger.debug(f"{message.author} - \"{message.content}\" - Not a Wordle!")
+                logger.debug(f"{message.author} - \"{message.content}\" - Not a Wordle!")
 
     async def _handle_commands(self, message: discord.Message):
         content = message.content.split(" ")
@@ -64,7 +65,7 @@ class WordleClient(discord.Client):
                 
                 # try to find this puzzle with this user in mongoDB
                 id = f"{message.author.name}_{message.author.discriminator}_{content[1]}"
-                result = self.mongo_collection.find_one({"_id":id})
+                result = self.result_collection.find_one({"_id":id})
                 if result:
                     result = WordleResult(result)
                     await message.channel.send(result)

@@ -133,3 +133,6 @@ config.json
 
 # visual studio code
 .vscode
+
+# program log files
+/logs
