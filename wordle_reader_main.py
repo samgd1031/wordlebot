@@ -40,16 +40,6 @@ if __name__ == '__main__':
     intents = discord.Intents.default()
     intents.message_content = True
 
-    
-    # helps debug outside of docker container, uncomment to load env from config.json
-    if os.path.isfile('config.json'):
-        with open('config.json') as cfg:
-            config = json.load(cfg)
-            os.environ["MONGO_URI"] = config["MONGO_URI"]
-            os.environ["MONGO_DATABASE"] = config["MONGO_DATABASE"]
-            os.environ["DISCORD_TOKEN"] = config["DISCORD_TOKEN"]
-    
-
     # connect to discord & mongo
     logger.info("Creating WordleClient...")
     try:
