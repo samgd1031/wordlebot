@@ -45,7 +45,10 @@ class WordleClient(discord.Client):
                 wr = WordleResult(wordle_message_to_dict(message))
                 # send to database
                 try:
-                    self.result_collection.insert_one(wr.to_dict())
+                    self.result_collection.insert_one(wr.to_dict())  # wordle result
+                    filt = {'player': f"{message.author.name}_{message.author.discriminator}"}
+                    newval = { '$inc' : { f"guess_totals.{wr.num_guesses}" : 1}}
+                    self.player_collection.update_one(filt, newval, upsert=True)
                     response = wr.__repr__()
                 except pymongo.errors.DuplicateKeyError:
                     response = f"Duplicate entry for {wr.puzzle_number}, not added to database."

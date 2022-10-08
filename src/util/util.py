@@ -23,7 +23,7 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     d["puzzle"] = "wordle_" + hdr[1]
     d["hard_mode"] = True if hdr[2][-1] == '*' else False
     d["num_guesses"] = 0 if hdr[2][0] == 'X' else int(hdr[2][0])
-    d["solved"] = False if d["num_guesses"] == -1 else True
+    d["solved"] = False if d["num_guesses"] == 0 else True
     d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']}"
 
     return d

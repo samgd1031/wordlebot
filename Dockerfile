@@ -9,7 +9,6 @@ COPY . .
 # environment variables for mongo/discord
 ENV MONGO_URI = "URI for mongo database" \
     MONGO_DATABASE="Database name to store results in" \
-    MONGO_COLLECTION="Collection name to store results in" \
     DISCORD_TOKEN="private_discord_token here"
 
 # setup logging directory
