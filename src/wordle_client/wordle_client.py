@@ -47,7 +47,7 @@ class WordleClient(discord.Client):
                 try:
                     self.result_collection.insert_one(wr.to_dict())  # wordle result
                     filt = {'player': f"{message.author.name}_{message.author.discriminator}"}
-                    newval = { '$inc' : { f"guess_totals.{wr.num_guesses}" : 1}}
+                    newval = { '$inc' : { f"guess_totals.{wr.num_guesses}" : 1, "n_played": 1}}
                     self.player_collection.update_one(filt, newval, upsert=True)
                     response = wr.__repr__()
                 except pymongo.errors.DuplicateKeyError:
@@ -77,11 +77,30 @@ class WordleClient(discord.Client):
                     logger.debug(f'{content[1]} not found!')
                     await message.channel.send(f'{content[1]} not found!')
 
+            case "!mystats":
+                logger.debug('got "mystats" command')
+                player = f"{message.author.name}_{message.author.discriminator}"
+                doc = self.player_collection.find_one({"player":player})
+                if not doc:
+                    await message.channel.send(f"No data found for {message.author.name}#{message.author.discriminator}.  Add some Wordles!")
+                else:
+                    resp = f"All-time stats for {message.author.name}#{message.author.discriminator}:\n" + \
+                            f"Puzzles Played: {doc['n_puzzles']}\n"
+                    nguess = ['X','1','2','3','4','5','6']
+                    for ii, g in enumerate(nguess):
+                        if str(ii) in doc["guess_totals"].keys():
+                            resp += f"\t{g}: {doc['guess_totals'][str(ii)]}\n"
+                        else:
+                            resp += f"\t{g}: 0\n"
+                
+                await message.channel.send(resp)
+
             case "!help":
                 logger.debug('got "help" command')
                 resp =  "~WordleBot Commands~\n" + \
                         "!help -   Show help\n" + \
-                        "!getpuzzle wordle_###   -   Get your result for puzzle ###"
+                        "!getpuzzle wordle_###   -   Get your result for puzzle ###\n" + \
+                        "!mystats   -   Get your all-time stats"
                 await message.channel.send(resp)
 
             case other:
