@@ -42,17 +42,7 @@ class WordleClient(discord.Client):
             # checks if valid wordle
             content = message.content.split("\n")
             if is_valid_wordle(content[0]):
-                wr = WordleResult(wordle_message_to_dict(message))
-                # send to database
-                try:
-                    self.result_collection.insert_one(wr.to_dict())  # wordle result
-                    filt = {'player': f"{message.author.name}_{message.author.discriminator}"}
-                    newval = { '$inc' : { f"guess_totals.{wr.num_guesses}" : 1, "n_played": 1}}
-                    self.player_collection.update_one(filt, newval, upsert=True)
-                    response = wr.__repr__()
-                except pymongo.errors.DuplicateKeyError:
-                    response = f"Duplicate entry for {wr.puzzle_number}, not added to database."
-
+                response = self.handle_valid_wordles(message)
                 await message.channel.send(response)
             else:
                 logger.debug(f"{message.author} - \"{message.content}\" - Not a Wordle!")
@@ -85,7 +75,9 @@ class WordleClient(discord.Client):
                     await message.channel.send(f"No data found for {message.author.name}#{message.author.discriminator}.  Add some Wordles!")
                 else:
                     resp = f"All-time stats for {message.author.name}#{message.author.discriminator}:\n" + \
-                            f"Puzzles Played: {doc['n_puzzles']}\n"
+                            f"Puzzles Played: {doc['n_played']}\n" +\
+                            f"Current streak: {doc['streak']['current']} days\n" + \
+                            f"Best streak:    {doc['streak']['max']} days\n"
                     nguess = ['X','1','2','3','4','5','6']
                     for ii, g in enumerate(nguess):
                         if str(ii) in doc["guess_totals"].keys():
@@ -106,3 +98,46 @@ class WordleClient(discord.Client):
             case other:
                 logger.debug('got unrecognized command')
                 message.channel.send(f'Command "{content[0]}" not recognized.')
+
+    # figures out stuff when a player adds a new wordle message
+    # updates their user stat totals, streak, etc. too
+    def handle_valid_wordles(self, message: discord.Message) -> str:
+        wr = WordleResult(wordle_message_to_dict(message))
+        # send to database
+        try:
+            # updates to user stats
+            filt = {'player': f"{message.author.name}_{message.author.discriminator}"}
+            # always increment guess total and total puzzles played
+            # also always replace last puzzle
+            newval = { '$inc' : { f"guess_totals.{wr.num_guesses}" : 1, "n_played": 1},
+                        '$set' : {'last_puzzle': [wr.puzzle_number, wr.dt]}
+                        }
+
+            # try to get existing user stats so that streak can be checked
+            current_stats = self.player_collection.find_one(filt)
+            if current_stats:
+                last_puzzle_num = int(current_stats["last_puzzle"][0].split("_")[1])
+                new_puzzle_num = int(wr.puzzle_number.split("_")[1])
+                streak = (new_puzzle_num - last_puzzle_num) == 1
+
+                if streak & wr.solved:
+                    newval["$inc"]["streak.current"] = 1
+                    newval['$set']["streak.max"] = max(current_stats["streak"]["current"]+1, current_stats["streak"]["max"])
+                else:
+                    newval["$set"]["streak.current"] = 0
+
+
+            else:  # new player
+                if wr.solved:
+                    newval["$inc"]["streak.current"] = 1
+                    newval["$inc"]["streak.max"] = 1
+                else:
+                    newval["$set"]["streak"] = 0
+
+            self.result_collection.insert_one(wr.to_dict())  # wordle result
+            self.player_collection.update_one(filt, newval, upsert=True) # player stats
+            response = wr.__repr__()
+        except pymongo.errors.DuplicateKeyError:
+            response = f"Duplicate entry for {wr.puzzle_number}, not added to database."
+
+        return response
