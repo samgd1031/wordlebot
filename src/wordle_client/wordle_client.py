@@ -120,11 +120,11 @@ class WordleClient(discord.Client):
                 new_puzzle_num = int(wr.puzzle_number.split("_")[1])
                 streak = (new_puzzle_num - last_puzzle_num) == 1
 
-                if streak & wr.solved:
+                if streak & wr.solved:  # add one to current streak, and update longest all-time streak if necessary
                     newval["$inc"]["streak.current"] = 1
                     newval['$set']["streak.max"] = max(current_stats["streak"]["current"]+1, current_stats["streak"]["max"])
-                else:
-                    newval["$set"]["streak.current"] = 0
+                else:  # if puzzle was failed, streak is zero, if solved, streak is 1
+                    newval["$set"]["streak.current"] = 1 if wr.solved else 0
 
 
             else:  # new player
