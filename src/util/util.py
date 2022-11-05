@@ -16,14 +16,14 @@ def is_valid_wordle(msg: str) -> bool:
 
 def wordle_message_to_dict(message: discord.Message) -> dict:
     d = {}
-    d["player"] = f"{message.author.name}_{message.author.discriminator}"
+    d["player"] = {"name":message.author.name, "discriminator":message.author.discriminator}
     d["time"] = message.created_at
     cont = message.content.split("\n")
     hdr = cont[0].split()
-    d["puzzle"] = "wordle_" + hdr[1]
+    d["puzzle"] = {"type": "wordle", "number": hdr[1]}
     d["hard_mode"] = True if hdr[2][-1] == '*' else False
     d["num_guesses"] = 0 if hdr[2][0] == 'X' else int(hdr[2][0])
     d["solved"] = False if d["num_guesses"] == 0 else True
-    d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']}"
+    d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']['type']}_{d['puzzle']['number']}"
 
     return d
