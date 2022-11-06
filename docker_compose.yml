@@ -1,0 +1,33 @@
+version: '3.7'
+networks:
+  wordlenet:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+services:
+  mongodb_container:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ROOTUSER
+      MONGO_INITDB_ROOT_PASSWORD: ROOTPASS
+    networks:
+      wordlenet:
+        ipv4_address: 172.20.0.10
+    ports:
+      - 27017:27017
+    volumes:
+      - /wordlebot/data/db:/data/db
+    restart: always
+  wordle_stats:
+    image: samgd1031/wordle_stats:latest
+    environment:
+      MONGO_URI: URI
+      MONGO_DATABASE: word_games
+      MONGO_COLLECTION: wordle
+      DISCORD_TOKEN: DISCORD_BOT_TOKEN
+    volumes:
+      - /wordle_bot/logs:/wordleapp/logs
+    networks:
+      wordlenet:
+        ipv4_address: 172.20.0.11
+    restart: always
