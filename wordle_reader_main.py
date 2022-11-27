@@ -1,9 +1,7 @@
 from genericpath import isfile
 import discord
 import logging, logging.handlers
-import datetime as dt
 import os
-import json
 import sys
 
 from src.wordle_client.wordle_client import WordleClient

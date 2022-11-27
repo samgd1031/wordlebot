@@ -1,10 +1,13 @@
 import discord
+from discord.ext import tasks
 from pymongo import MongoClient
 import pymongo
 import pymongo.errors
 from src.wordle_result.wordle_result import WordleResult
 from src.util.util import *
 import logging
+import datetime as dt
+from zoneinfo import ZoneInfo
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +28,7 @@ class WordleClient(discord.Client):
     # notify bot owner that login is successful
     async def on_ready(self):
         logger.info(f"Logged on to Discord as {self.user}")
+        self.looptest.start()
 
     # if valid wordle message, parse and have the bot send a message back
     # otherwise just print the invalid message to console (this behavior can probably be removed eventually)
@@ -141,3 +145,7 @@ class WordleClient(discord.Client):
             response = f"Duplicate entry for {wr.puzzle_number}, not added to database."
 
         return response
+
+    @tasks.loop(time=dt.time(12,0,0, tzinfo=ZoneInfo("America/Los_Angeles")))
+    async def looptest(self):
+        logger.info(f"regular loop test")

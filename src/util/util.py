@@ -3,10 +3,14 @@ Utility Functions
 '''
 import re
 import discord
+import pymongo
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 # check if a message string is a valid wordle result
 def is_valid_wordle(msg: str) -> bool:
-
     isWordle = re.match(r"Wordle \d* [1-6X]/6\*?", msg)
     
     if isWordle:
@@ -14,6 +18,7 @@ def is_valid_wordle(msg: str) -> bool:
     else:
         return False
 
+# convert a discord message to a dictionary format for sending to MongoDB
 def wordle_message_to_dict(message: discord.Message) -> dict:
     d = {}
     d["player"] = {"name":message.author.name, "discriminator":message.author.discriminator}
@@ -27,3 +32,34 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']['type']}_{d['puzzle']['number']}"
 
     return d
+
+# given a puzzle and client connected to a database, find who did the best that day
+def daily_winner(puzzle_num: int, mc: pymongo.MongoClient) -> list:
+    collection = mc['word_games']['wordle_test']
+
+    docs = collection.find({"puzzle": {"type": "wordle",
+                                        "number": puzzle_num}})
+
+    # assign scores for everyone
+    scores = []
+    for doc in docs:
+        nguess = doc['num_guesses'] if doc['solved'] else 7
+        scores.append([doc['player']['name'], nguess])
+    
+    # sort scores and determine winners
+    if not scores: 
+        logger.debug(f'No entries found for Wordle {puzzle_num}')
+    else:
+        # sort scores
+        scores = sorted(scores, key=lambda x:x[1])
+        # assign places
+        nplace = 1
+        score = scores[1][1]
+        for ii, entry in enumerate(scores):
+            if entry[1] != score:
+                score = entry[1]
+                nplace += 1
+            scores[ii].append(nplace)
+            
+        # return list of lists (player, score, place)
+        return scores
