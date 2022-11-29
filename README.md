@@ -14,7 +14,7 @@ Wordle results are stored in MongoDB using the following document schema (one do
 * **player**: An object with the following fields:
   * **name**: The player's Discord username.
   * **discriminator**:  The player's four digit Discord discriminator (the numbers after the #).
-  * **num_guesses**: The number of guesses it took to solve the puzzle.  Currently misses are stored as 0, but this will soon be updated to 7 to help with determining daily winners.
+* **num_guesses**: The number of guesses it took to solve the puzzle.  Misses are stored as 7 to help with determining daily winners.
 * **solved**:  A boolean whether the player solved the puzzle or not.
 * **hard_mode**: A boolean whether the player enabled hard mode or not (denoted by an asterisk after the score in the wordle result).
 * **puzzle**:  An object with the following fields:
@@ -22,4 +22,15 @@ Wordle results are stored in MongoDB using the following document schema (one do
   * **number**: The number of the puzzle (for example '500' for Wordle puzzle 500)
 
 ### Player All-Time Stats
-  Description of how all-time stats are stored is to come
+ * **\_id**: A unique identifier
+ * **player**: An object with the following fields:
+   * **name**: The player's Discord username.
+   * **discriminator**:  The player's four digit Discord discriminator (the numbers after the #).
+ * **guess_totals**:  An object that tracks the number of times a puzzle has been solved with a certain number of guesses.
+ * **last_puzzle**:  An object that indicates the last puzzle the user played:
+   * **0**: This field contains the **puzzle** object detailed above (type and number).
+   * **1**: This field is the timestamp for when it was solved.
+ * **n_played**: An integer with the number of puzzles the person has played.
+ * **streak**: An object with the following fields:
+   * **current**: The player's current active streak (calculated lazily upon a new puzzle addition).
+   * **max**: The user's longest ever streak.
