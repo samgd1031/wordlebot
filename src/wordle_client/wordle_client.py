@@ -17,18 +17,19 @@ logger = logging.getLogger(__name__)
 class WordleClient(discord.Client):
 
     # set up client with connection to mongoDB
-    def __init__(self, *, intents: discord.Intents, mongo_uri, mongo_db, **options) -> None:
+    def __init__(self, *, intents: discord.Intents, mongo_uri, mongo_db, discord_channel, **options) -> None:
         self.mongo_client = MongoClient(mongo_uri)
         self.mongo_db = self.mongo_client[mongo_db]
         self.result_collection = self.mongo_db["wordle"]
         self.player_collection = self.mongo_db["wordle_players"]
+        self.channel_id = discord_channel
         logger.info(f'Connected to MongoDB. Using database: {mongo_db}')
         super().__init__(intents=intents, **options)
 
     # notify bot owner that login is successful
     async def on_ready(self):
         logger.info(f"Logged on to Discord as {self.user}")
-        self.looptest.start()
+        self.daily_report.start()
 
     # if valid wordle message, parse and have the bot send a message back
     # otherwise just print the invalid message to console (this behavior can probably be removed eventually)
@@ -110,18 +111,19 @@ class WordleClient(discord.Client):
         # send to database
         try:
             # updates to user stats
-            filt = {'player': f"{message.author.name}_{message.author.discriminator}"}
+            filt = {'player': {'name':message.author.name, 
+                               'discriminator': message.author.discriminator}}
             # always increment guess total and total puzzles played
             # also always replace last puzzle
             newval = { '$inc' : { f"guess_totals.{wr.num_guesses}" : 1, "n_played": 1},
-                        '$set' : {'last_puzzle': [wr.puzzle_number, wr.dt]}
+                        '$set' : {'last_puzzle': [wr.puzzle, wr.dt]}
                         }
 
             # try to get existing user stats so that streak can be checked
             current_stats = self.player_collection.find_one(filt)
             if current_stats:
-                last_puzzle_num = int(current_stats["last_puzzle"][0].split("_")[1])
-                new_puzzle_num = int(wr.puzzle_number.split("_")[1])
+                last_puzzle_num = int(current_stats["last_puzzle"][0]['number'])
+                new_puzzle_num = int(wr.puzzle['number'])
                 streak = (new_puzzle_num - last_puzzle_num) == 1
 
                 if streak & wr.solved:  # add one to current streak, and update longest all-time streak if necessary
@@ -142,10 +144,30 @@ class WordleClient(discord.Client):
             self.player_collection.update_one(filt, newval, upsert=True) # player stats
             response = wr.__repr__()
         except pymongo.errors.DuplicateKeyError:
-            response = f"Duplicate entry for {wr.puzzle_number}, not added to database."
+            response = f"Duplicate entry for {wr.puzzle['type']} {wr.puzzle['number']}, not added to database."
 
         return response
 
+    # send a report message once a day with the winners from the day before
     @tasks.loop(time=dt.time(12,0,0, tzinfo=ZoneInfo("America/Los_Angeles")))
-    async def looptest(self):
-        logger.info(f"regular loop test")
+    async def daily_report(self):
+        # get latest puzzle number
+        today = dt.datetime.now(tz=ZoneInfo("America/Los_Angeles")).replace(hour=0, minute=0, second=0, microsecond=0)
+        yesterday = today - dt.timedelta(days=1.0)
+        logger.info(f'Calculating daily winners for {yesterday.date()}')
+        
+        # get ranking
+        ranked, puzzle = get_daily_winners(yesterday, self.result_collection)
+
+        # send message to discord (unless there are no entries)
+        if not ranked:
+            logger.info(f'No wordle entries found for {yesterday.date()}')
+        else:
+            msg = f"```--- Daily Competition for Wordle {puzzle} ({yesterday.date().strftime('%m/%d/%Y')}) ---\n"
+            for person in ranked:
+                msg += f"{person[2]}. {person[0]:16} - {person[1]}\n"
+            msg += "```"
+
+            logger.debug(msg)
+            chan = await self.fetch_channel(self.channel_id)
+            await chan.send(msg)

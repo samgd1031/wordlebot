@@ -43,7 +43,8 @@ if __name__ == '__main__':
     try:
         client = WordleClient(intents=intents, 
                                 mongo_uri=os.environ["MONGO_URI"], 
-                                mongo_db=os.environ["MONGO_DATABASE"])
+                                mongo_db=os.environ["MONGO_DATABASE"],
+                                discord_channel=os.environ['DISCORD_CHANNEL_ID'])
         logger.info('WordleClient setup successful.')
     except BaseException as err:
         logger.exception("Client setup unsuccessful, see traceback below.")

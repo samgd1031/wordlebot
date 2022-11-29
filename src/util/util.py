@@ -5,6 +5,8 @@ import re
 import discord
 import pymongo
 import logging
+import datetime as dt
+from zoneinfo import ZoneInfo
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,7 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     d["time"] = message.created_at
     cont = message.content.split("\n")
     hdr = cont[0].split()
-    d["puzzle"] = {"type": "wordle", "number": hdr[1]}
+    d["puzzle"] = {"type": "Wordle", "number": int(hdr[1])}
     d["hard_mode"] = True if hdr[2][-1] == '*' else False
     d["num_guesses"] = 0 if hdr[2][0] == 'X' else int(hdr[2][0])
     d["solved"] = False if d["num_guesses"] == 0 else True
@@ -34,32 +36,31 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     return d
 
 # given a puzzle and client connected to a database, find who did the best that day
-def daily_winner(puzzle_num: int, mc: pymongo.MongoClient) -> list:
-    collection = mc['word_games']['wordle_test']
-
-    docs = collection.find({"puzzle": {"type": "wordle",
-                                        "number": puzzle_num}})
-
-    # assign scores for everyone
-    scores = []
-    for doc in docs:
-        nguess = doc['num_guesses'] if doc['solved'] else 7
-        scores.append([doc['player']['name'], nguess])
+def get_daily_winners(day: dt.datetime, collection) -> list:
+    docs = collection.find({"time":{'$gte':day, '$lt':day + dt.timedelta(days=1.0)}})
+    docs = list(docs)
     
-    # sort scores and determine winners
-    if not scores: 
-        logger.debug(f'No entries found for Wordle {puzzle_num}')
+    if len(docs) == 0: 
+        return None, None
+    # assign scores for everyone
     else:
+        # sort scores and determine winners
+        scores = []
+        puzzle = docs[0]['puzzle']['number']
+        for doc in docs:
+            nguess = doc['num_guesses'] if doc['solved'] else 7
+            scores.append([doc['player']['name'], nguess])
+            
         # sort scores
         scores = sorted(scores, key=lambda x:x[1])
         # assign places
         nplace = 1
-        score = scores[1][1]
+        score = scores[0][1]
         for ii, entry in enumerate(scores):
             if entry[1] != score:
                 score = entry[1]
                 nplace += 1
             scores[ii].append(nplace)
             
-        # return list of lists (player, score, place)
-        return scores
+        # return list of lists (player, score, place), and puzzle number
+        return scores, puzzle
