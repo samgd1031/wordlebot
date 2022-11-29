@@ -95,7 +95,7 @@ class WordleClient(discord.Client):
             case "!help":
                 logger.debug('got "help" command')
                 resp =  "~WordleBot Commands~\n" + \
-                        "https://github.com/samgd1031/wordle_stats" + \
+                        "https://github.com/samgd1031/wordle_stats\n" + \
                         "!help -   Show help\n" + \
                         "!getpuzzle wordle_###   -   Get your result for puzzle ###\n" + \
                         "!mystats   -   Get your all-time stats"
