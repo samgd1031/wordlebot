@@ -9,7 +9,8 @@ COPY . .
 # environment variables for mongo/discord
 ENV MONGO_URI = "URI for mongo database" \
     MONGO_DATABASE="Database name to store results in" \
-    DISCORD_TOKEN="private_discord_token here"
+    DISCORD_TOKEN="private_discord_token here" \
+    DISCORD_CHANNEL_ID= "Channel ID you want the bot to post into"
 
 # setup logging directory
 RUN mkdir "logs"

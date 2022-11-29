@@ -18,7 +18,7 @@ Wordle results are stored in MongoDB using the following document schema (one do
 * **solved**:  A boolean whether the player solved the puzzle or not.
 * **hard_mode**: A boolean whether the player enabled hard mode or not (denoted by an asterisk after the score in the wordle result).
 * **puzzle**:  An object with the following fields:
-  * **type**: Type of word game, for now only "wordle" is supported.
+  * **type**: Type of word game, for now only "Wordle" is supported.
   * **number**: The number of the puzzle (for example '500' for Wordle puzzle 500)
 
 ### Player All-Time Stats

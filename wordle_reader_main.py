@@ -1,9 +1,7 @@
 from genericpath import isfile
 import discord
 import logging, logging.handlers
-import datetime as dt
 import os
-import json
 import sys
 
 from src.wordle_client.wordle_client import WordleClient
@@ -45,7 +43,8 @@ if __name__ == '__main__':
     try:
         client = WordleClient(intents=intents, 
                                 mongo_uri=os.environ["MONGO_URI"], 
-                                mongo_db=os.environ["MONGO_DATABASE"])
+                                mongo_db=os.environ["MONGO_DATABASE"],
+                                discord_channel=os.environ['DISCORD_CHANNEL_ID'])
         logger.info('WordleClient setup successful.')
     except BaseException as err:
         logger.exception("Client setup unsuccessful, see traceback below.")
