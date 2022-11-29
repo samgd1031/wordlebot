@@ -74,7 +74,7 @@ class WordleClient(discord.Client):
 
             case "!mystats":
                 logger.debug('got "mystats" command')
-                player = f"{message.author.name}_{message.author.discriminator}"
+                player = {'name': message.author.name, 'discriminator':message.author.discriminator}
                 doc = self.player_collection.find_one({"player":player})
                 if not doc:
                     await message.channel.send(f"No data found for {message.author.name}#{message.author.discriminator}.  Add some Wordles!")
