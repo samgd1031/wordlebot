@@ -28,6 +28,6 @@ class WordleResult():
 
     def __repr__(self) -> str:
         if self.solved:
-            return f"{self.puzzle['type']} {self.puzzle['number']} solved by {self.player['name']}#{self.player['discriminator']} on {self.dt.strftime('%m/%d/%Y %Z')} | guesses: {self.num_guesses} | hard mode: {self.hard_mode}"
+            return f"{self.puzzle['type']} {self.puzzle['number']} solved by {self.player['name']}#{self.player['discriminator']} | guesses: {self.num_guesses} | hard mode: {self.hard_mode}"
         else:
-            return f"{self.puzzle['type']} {self.puzzle['number']} failed by {self.player['name']}#{self.player['discriminator']} on {self.dt.strftime('%m/%d/%Y %Z')} | hard mode: {self.hard_mode}"
+            return f"{self.puzzle['type']} {self.puzzle['number']} failed by {self.player['name']}#{self.player['discriminator']} | hard mode: {self.hard_mode}"
