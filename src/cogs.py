@@ -1,9 +1,11 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import pymongo
 import src.util as util
 import os
 from src.wordle_result import WordleResult
+from zoneinfo import ZoneInfo
+import datetime as dt
 
 """Listens for wordle results and sends results to mongoDB"""
 class WordleUtilCog(commands.Cog):
@@ -16,6 +18,7 @@ class WordleUtilCog(commands.Cog):
         self.db = self.mclient["word_games"]
         self.results = self.db['wordle']
         self.players = self.db["wordle_players"]
+        self.data = self.db["wordlebot_data"]
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
@@ -34,3 +37,9 @@ class WordleUtilCog(commands.Cog):
                                         update={"$addToSet":{"channel":msg.channel.id}})
             # send reply to channel
             await msg.channel.send(wr)
+
+    @tasks.loop(time=dt.time(12,0,0, tzinfo=ZoneInfo("America/Los_Angeles")))
+    async def daily_report(self):
+        """Get results for the previous day and make a post in the appropriate channels"""
+        doc = self.data.find_one(filter={"_id":"wordle"})
+        pass

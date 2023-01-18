@@ -24,7 +24,7 @@ Wordle results are stored in MongoDB using the following document schema (one do
 
 If a user posts the same wordle result to multiple channels, a new entry will be appended to this list.  This way, daily rankings can be separated into servers (results in one server/channel won't affect another)
 
-### Player All-Time Stats
+### Player All-Time Stats (TODO)
  * **\_id**: A unique identifier
  * **player**: An object with the following fields:
    * **name**: The player's Discord username.
