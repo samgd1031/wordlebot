@@ -30,9 +30,7 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     d["num_guesses"] = 0 if hdr[2][0] == 'X' else int(hdr[2][0])
     d["solved"] = False if d["num_guesses"] == 0 else True
     d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']['type']}_{d['puzzle']['number']}"
-    d["channel"] = [{"id":message.channel.id,
-                    "guild": message.channel.guild.name if message.channel.guild else "",
-                    "type": message.channel.type.name}]
+    d["channel"] = [message.channel.id]
 
     return d
 

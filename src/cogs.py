@@ -24,5 +24,13 @@ class WordleUtilCog(commands.Cog):
             return
         content = msg.content.split("\n")
         if util.is_valid_wordle(content[0]):
-            wr = WordleResult(util.wordle_message_to_dict(msg))
+            wordle_dict = util.wordle_message_to_dict(msg)
+            wr = WordleResult(wordle_dict)
+            # add the result to mongoDB
+            # check if the result exists and append the channel (if not duplicate)
+            result = self.results.find_one(filter={"_id":wordle_dict["_id"]})
+            if result: # exists, append channel
+                self.results.update_one(filter={"_id":wordle_dict["_id"]},
+                                        update={"$addToSet":{"channel":msg.channel.id}})
+            # send reply to channel
             await msg.channel.send(wr)

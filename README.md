@@ -20,10 +20,7 @@ Wordle results are stored in MongoDB using the following document schema (one do
 * **puzzle**:  An object with the following fields:
   * **type**: Type of word game, for now only "Wordle" is supported.
   * **number**: The number of the puzzle (for example '500' for Wordle puzzle 500)
-* **channel**: A list of objects, each with the following fields:
-  * **id**: The unique discord ID for the channel in which the wordle result was posted.
-  * **guild**: The name of the guild in which the result was posted
-  * **type**: The type of channel (public, private DM, etc.)
+* **channel**: The unique discord ID for the channel in which the wordle result was posted.
 
 If a user posts the same wordle result to multiple channels, a new entry will be appended to this list.  This way, daily rankings can be separated into servers (results in one server/channel won't affect another)
 
