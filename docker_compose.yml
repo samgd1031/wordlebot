@@ -22,8 +22,6 @@ services:
     image: samgd1031/wordle_stats:latest
     environment:
       MONGO_URI: URI
-      MONGO_DATABASE: word_games
-      MONGO_COLLECTION: wordle
       DISCORD_TOKEN: DISCORD_BOT_TOKEN
     volumes:
       - /wordle_bot/logs:/wordleapp/logs
