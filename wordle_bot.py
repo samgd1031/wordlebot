@@ -10,8 +10,7 @@ class Wordlebot(commands.Bot):
 
     async def setup_hook(self) -> None:
         await bot.add_cog(WordleUtilCog(bot))
-        #self.tree.copy_global_to(guild=discord.Object(id=1011135985460985906))
-        #await self.tree.sync()
+        await self.tree.sync()
 
     async def on_ready(self):
         print("logged in")
