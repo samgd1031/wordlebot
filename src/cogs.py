@@ -11,14 +11,29 @@ import datetime as dt
 class WordleUtilCog(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        super().__init__()
-
         # create pymongo client
         self.mclient = pymongo.MongoClient(os.environ['MONGO_URI'])
         self.db = self.mclient["word_games"]
         self.results = self.db['wordle']
-        self.players = self.db["wordle_players"]
+        #self.players = self.db["wordle_players"] # TODO, add persistent player stats
         self.data = self.db["wordlebot_data"]
+        self.daily_report.start()
+        super().__init__()
+
+
+    def get_puzzle_entries(self, puzzle_num: int, guild_id: int):
+        """Given a puzzle number, get the entries for that puzzle
+            Optionally filter by guild_id
+        """
+        # first get all entries for the puzzle
+        docs = self.results.find({"puzzle":{"type":"Wordle", "number":puzzle_num}})
+        docs = list(docs)
+
+        # then filter to just ones in the guild the command originated from
+        if guild_id:
+            docs = [ doc for doc in docs if guild_id in doc['guild'] ]
+        return docs
+
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
@@ -34,12 +49,41 @@ class WordleUtilCog(commands.Cog):
             result = self.results.find_one(filter={"_id":wordle_dict["_id"]})
             if result: # exists, append channel
                 self.results.update_one(filter={"_id":wordle_dict["_id"]},
-                                        update={"$addToSet":{"channel":msg.channel.id}})
+                                        update={"$addToSet":{"guild":msg.guild.id if msg.guild else 0,
+                                                             "channel":msg.channel.id}})
             # send reply to channel
             await msg.channel.send(wr)
+
 
     @tasks.loop(time=dt.time(12,0,0, tzinfo=ZoneInfo("America/Los_Angeles")))
     async def daily_report(self):
         """Get results for the previous day and make a post in the appropriate channels"""
         doc = self.data.find_one(filter={"_id":"wordle"})
-        pass
+        puzzle = doc['number']
+
+        entries = self.get_puzzle_entries(puzzle, None)
+
+        # sort by server
+        grouped_entries = {}
+        for e in entries:
+            for ii, guild in enumerate(e['guild']):
+                if guild == 0: # skip dm'd results
+                    continue
+                if guild not in grouped_entries:
+                    grouped_entries[guild] = {"entries":[e], "channel":e["channel"][ii]}
+                else:
+                    grouped_entries[guild]["entries"].append(e)
+
+        # send a result message for each guild
+        for gid in grouped_entries.keys():
+            resp = util.print_daily_winners(grouped_entries[gid]["entries"], puzzle)
+            channel = self.bot.get_channel(grouped_entries[gid]["channel"])
+            await channel.send(resp)
+
+        # increment puzzle number for the next day
+        self.data.update_one(filter={"_id":"wordle"},
+                             update={"$inc":{"number": 1}})
+
+    @daily_report.before_loop
+    async def before_daily(self):
+        await self.bot.wait_until_ready()

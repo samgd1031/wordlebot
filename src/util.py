@@ -34,32 +34,18 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
 
     return d
 
-# given a puzzle and client connected to a database, find who did the best that day
-def get_daily_winners(day: dt.datetime, collection) -> list:
-    docs = collection.find({"time":{'$gte':day, '$lt':day + dt.timedelta(days=1.0)}})
-    docs = list(docs)
-    
-    if len(docs) == 0: 
-        return None, None
-    # assign scores for everyone
+def print_daily_winners(entries, puzzle_num):
+    if not entries:
+        resp = f"No entries for Wordle {puzzle_num}"
     else:
-        # sort scores and determine winners
-        scores = []
-        puzzle = docs[0]['puzzle']['number']
-        for doc in docs:
-            nguess = doc['num_guesses'] if doc['solved'] else 7
-            scores.append([doc['player']['name'], nguess])
-            
-        # sort scores
-        scores = sorted(scores, key=lambda x:x[1])
-        # assign places
+        resp = f"--- Wordle {puzzle_num} ---\n"
         nplace = 1
-        score = scores[0][1]
-        for ii, entry in enumerate(scores):
-            if entry[1] != score:
-                score = entry[1]
+        score = entries[0]['num_guesses']
+        for e in entries:
+            if e['num_guesses'] != score:
                 nplace += 1
-            scores[ii].append(nplace)
-            
-        # return list of lists (player, score, place), and puzzle number
-        return scores, puzzle
+                score = e['num_guesses']
+            resp += f"{nplace:2d}. {e['player']['name']:16s} - {'X' if score == 7 else score} "\
+                                                                f"{':crown:' if nplace == 1 else ''}\n"
+                                                            
+    return resp
