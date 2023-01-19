@@ -17,4 +17,4 @@ VOLUME /logs
 # install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "./wordle_reader_main.py"]
+CMD ["python", "./wordle_bot.py"]
