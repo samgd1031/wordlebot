@@ -22,7 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4.0.1
         with:
-          images: samgd1031/wordle_stats
+          images: samgd1031/wordlebot
           
       - name: build and push docker image
         uses: docker/build-push-action@v3.1.1
