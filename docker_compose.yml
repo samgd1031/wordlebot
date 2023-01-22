@@ -19,7 +19,7 @@ services:
       - /wordlebot/data/db:/data/db
     restart: always
   wordle_stats:
-    image: samgd1031/wordle_stats:latest
+    image: samgd1031/wordlebot:latest
     environment:
       MONGO_URI: URI
       DISCORD_TOKEN: DISCORD_BOT_TOKEN
