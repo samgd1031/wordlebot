@@ -19,11 +19,9 @@ services:
       - /wordlebot/data/db:/data/db
     restart: always
   wordle_stats:
-    image: samgd1031/wordle_stats:latest
+    image: samgd1031/wordlebot:latest
     environment:
       MONGO_URI: URI
-      MONGO_DATABASE: word_games
-      MONGO_COLLECTION: wordle
       DISCORD_TOKEN: DISCORD_BOT_TOKEN
     volumes:
       - /wordle_bot/logs:/wordleapp/logs
