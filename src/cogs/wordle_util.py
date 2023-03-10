@@ -55,6 +55,8 @@ class WordleUtils(commands.Cog):
                 self.results.update_one(filter={"_id":wordle_dict["_id"]},
                                         update={"$addToSet":{"guild":msg.guild.id if msg.guild else 0,
                                                              "channel":msg.channel.id}})
+            else:  # add a new document
+                self.results.insert_one(wordle_dict)
             # send reply to channel
             await msg.channel.send(wr)
 
@@ -81,7 +83,7 @@ class WordleUtils(commands.Cog):
         # send a result message for each guild
         for gid in grouped_entries.keys():
             resp = util.print_daily_winners(grouped_entries[gid]["entries"], puzzle)
-            channel = self.bot.get_channel(grouped_entries[gid]["channel"])
+            channel = self.client.get_channel(grouped_entries[gid]["channel"])
             await channel.send(resp)
 
         # increment puzzle number for the next day

@@ -31,6 +31,7 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     d["solved"] = False if d["num_guesses"] == 0 else True
     d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']['type']}_{d['puzzle']['number']}"
     d["channel"] = [message.channel.id]
+    d["guild"] = [message.guild.id]
 
     return d
 
@@ -38,6 +39,10 @@ def print_daily_winners(entries, puzzle_num):
     if not entries:
         resp = f"No entries for Wordle {puzzle_num}"
     else:
+        # sort
+        entries = sorted(entries, key=lambda d: d['num_guesses'])
+
+        # build response
         resp = f"--- Wordle {puzzle_num} ---\n"
         nplace = 1
         score = entries[0]['num_guesses']
