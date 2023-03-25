@@ -27,8 +27,8 @@ def wordle_message_to_dict(message: discord.Message) -> dict:
     hdr = cont[0].split()
     d["puzzle"] = {"type": "Wordle", "number": int(hdr[1])}
     d["hard_mode"] = True if hdr[2][-1] == '*' else False
-    d["num_guesses"] = 0 if hdr[2][0] == 'X' else int(hdr[2][0])
-    d["solved"] = False if d["num_guesses"] == 0 else True
+    d["num_guesses"] = 7 if hdr[2][0] == 'X' else int(hdr[2][0])
+    d["solved"] = False if d["num_guesses"] == 7 else True
     d["_id"]=f"{message.author.name}_{message.author.discriminator}_{d['puzzle']['type']}_{d['puzzle']['number']}"
     d["channel"] = [message.channel.id]
     d["guild"] = [message.guild.id]
