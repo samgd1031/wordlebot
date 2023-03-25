@@ -6,6 +6,12 @@ discord bot to automatically parse wordle result messages
 
 Requires Python 3.10 and packages in requirements.txt
 
+## Bot Commands
+
+* **/get_puzzle** <PuzzleNumber>: Get the results for a given Wordle puzzle.
+* **/hello**: Get a personalized hello message.
+* **/ping**: Get the bot latency.
+
 ## Database Schema
 
 ### Wordle Results
